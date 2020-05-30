@@ -2,16 +2,19 @@ let vm = new Vue({
     el: '#app',
     data: {
         loading: false,
-        currentTab: 0,
+        currentTab: 'feature',
         tabs: [
             {
                 title: 'Chức Năng',
+                name: 'feature'
             },
             {
                 title: 'Fly Color',
+                name: 'fly-color'
             },
             {
                 title: 'Giới Thiệu',
+                name: 'about'
             }
         ],
         features:
@@ -54,18 +57,37 @@ let vm = new Vue({
         },
         blocked: [],
         flyColor: {
+            multipleGroups: false,
             groupId: null,
             discordHook: null,
             facebookPostId: null,
             facebookPostFeedbackId: null,
             message: 'Blocked : {{ name }} | UID : {{ uid }} | Lí do : {{ reason }}',
+            ignoreMemberId: null,
             showReason: true,
-            banForever: false
+            banForever: false,
+            showNotiSetting: false,
+            showDeadBadge: true
         },
         alert: {
             status: null,
             show: false,
             message: null
+        },
+        actor: {
+            cookie: null,
+            fb_dtsg: null,
+            id: null,
+            token: null
+        }
+    },
+    computed: {
+        actorHasSet()
+        {
+            let keys = ['cookie', 'fb_dtsg', 'id', 'token'];
+            return keys.filter((key) => {
+                return this.actor[key] != null;
+            }).length == keys.length;
         }
     },
     methods: {
@@ -73,6 +95,7 @@ let vm = new Vue({
         {
             this.setFeature();
             this.setFlyColor();
+            this.setActor();
         },
         setFeature()
         {
@@ -125,51 +148,24 @@ let vm = new Vue({
         },
         setFlyColor()
         {
-            let flyColorSetting = localStorage.getItem('flyColorSetting') || this.flyColor;
-            this.flyColor = JSON.parse(flyColorSetting);
+            this.flyColor = JSON.parse(localStorage.getItem('flyColorSetting')) || this.flyColor;
         },
-        async connectToFacebook()
+        connectToFacebook()
         {
-            let actor = JSON.parse(localStorage.getItem('actor'));              
-            let message;
-            if(actor) 
-            {
-                if(this.flyColor.facebookPostId.trim())
-                {
-                    this.loading = true;
-                    let option = {
-                        fb_dtsg_ag: actor.fb_dtsg,
-                        fb_dtsg: actor.fb_dtsg,
-                    }
-                    let { data } = await axios.post(`${API_URL}?action=get-feedback-id`, {
-                        option, 
-                        cookie: actor.cookie,
-                        setting: this.flyColor
-                    });
-                    if(data) 
-                    {
-                        this.flyColor.facebookPostFeedbackId = data;
-                        message = {
-                            text: `Đã kết nối đến Facebook, giờ đây bạn có thể xem logs tại https://facebook.com/${this.flyColor.facebookPostId}`,
-                            status: 'success'
-                        };
-                    }
-                    else 
-                    {
-                        this.flyColor.facebookPostId = null;
-                        this.flyColor.facebookPostFeedbackId = null;
-                        message = {
-                            text: 'Không tìm thấy bài viết này',
-                            status: 'danger'
-                        };
-                    };
-                    this.loading = false;
-                    this.showAlert(message.text, message.status);
-                    return;
-                }
-                return;
-            }
-            this.showAlert('Phiên đã hết hạn! Vui lòng truy cập vào Facebook để tiếp tục', 'danger');
+            this.loading = true;
+            let actor = JSON.parse(localStorage.getItem('actor'));
+            const self = this;
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+                chrome.tabs.sendMessage(tabs[0].id || null, {action: 'CONNECT_TO_FACEBOOK', actor, facebookPostId: self.flyColor.facebookPostId});  
+            });
+        },
+        connectToFacebookCallback(payload)
+        {
+            this.loading = false;
+            let { message, data, status } = JSON.parse(payload);
+            if(!data) this.flyColor.facebookPostId = null;
+            this.flyColor.facebookPostFeedbackId = data;
+            this.showAlert(message, status);
         },
         async connectToDiscord()
         {
@@ -178,32 +174,46 @@ let vm = new Vue({
             {
                 if(this.flyColor.discordHook.trim())
                 {
-                    await axios.post(`${this.flyColor.discordHook}`, {
-                        content: "``Connected to Discord Webhook - Facebook Incognito Chrome Extension was powered by Sven``",
-                    });
-                    this.showAlert('Kết nối đến Webhook Discord thành công', 'success');
+                    let { data } = await axios.get(`${this.flyColor.discordHook}`);
+                    this.showAlert(`Kết nối đến Discord Webhook - ${data.name} thành công`, 'success');
                 }
             }
             catch(e)
             {
                 this.flyColor.discordHook = null;
-                this.showAlert('Không thể kết nối đến Webhook Discord', 'danger');
+                this.showAlert('Không thể kết nối đến Discord Webhook', 'danger');
             }
             this.loading = false;
         },
 
-        showAlert(message, status, time = 5000)
+        showAlert(message, status, time = 10000)
         {
             this.alert = {
                 show: true,
                 message,
                 status
             };
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
             setTimeout(() => {
                 this.alert.show = false;
             }, time);
-        }
+        },
+
+        setActor()
+        {
+            this.actor = JSON.parse(localStorage.getItem('actor')) || this.actor;
+        },
     },
 });
 
 vm.setDefaultValue();
+
+chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
+    switch(request.action)
+    {
+        case 'CONNECT_TO_FACEBOOK_CALLBACK':
+            vm.connectToFacebookCallback(request.payload);
+        break;
+    }
+});

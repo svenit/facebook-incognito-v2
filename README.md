@@ -9,6 +9,8 @@
 - Lọc mem hàng loạt theo UID ( Đang cập nhật )
 - Lọc mem hàng loạt theo từ cấm ( Đang cập nhật )
 - Log thông báo đa kênh như Discord, Facebook...
+- Fly Color In Multiple Groups 
+- No checkpoint
 
 ### Installation
 
