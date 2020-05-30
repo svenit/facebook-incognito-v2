@@ -6,6 +6,7 @@
  */
 
 const supportDomain = ['facebook.com'];
+let stack = [];
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     switch(request.action)
@@ -192,12 +193,14 @@ function createMessageBox(request)
 
     let messageBox = document.createElement('div');
 
+    stack = [...stack, stack.length];
+    messageBox.setAttribute('stack-id', stack.length - 1);
     messageBox.style.backgroundColor = status[request.status].backgroundColor;
     messageBox.style.borderBottom = `1px solid ${status[request.status].border}`;
     messageBox.style.position = 'fixed';
-    messageBox.style.bottom = 0;
     messageBox.style.right = '-200px';
     messageBox.style.margin = '10px';
+    messageBox.style.bottom = 0;
     messageBox.style.zIndex = 9999999999;
     messageBox.style.color = '#fff';
     messageBox.style.boxShadow = 'rgba(0, 0, 0, 0.098039) 5px 4px 10px 0';
@@ -220,7 +223,6 @@ function createMessageBox(request)
     messageBox.appendChild(messageContent);
     messageBox.appendChild(messageBoxProgress);
     document.body.appendChild(messageBox);
-
     setTimeout(() => {
         messageBox.style.marginRight = '210px';
     }, 0);
@@ -228,9 +230,11 @@ function createMessageBox(request)
     let i = 0;
     let progress = setInterval(() => {
         messageBoxProgress.style.width = `${100 - ++i}%`;
+        messageBox.style.bottom = parseInt(messageBox.getAttribute('stack-id')) * (stack.length - 1) * messageBox.clientHeight + 'px';
         if(i >= 100)
         {
             document.body.removeChild(messageBox);
+            stack.pop()
             clearInterval(progress);
         }
     }, time / 100);
