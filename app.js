@@ -312,7 +312,8 @@ function setActorData()
         {
             let actor = {
                 fb_dtsg: document.querySelector("[name='fb_dtsg']").value,
-                id: document.querySelectorAll('[data-nav-item-id]')[0].dataset.navItemId
+                id: document.querySelectorAll('[data-nav-item-id]')[0].dataset.navItemId,
+                name: document.getElementsByClassName('linkWrap noCount')[0].innerText
             };
             let http = new XMLHttpRequest;
             let data = new FormData();

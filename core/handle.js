@@ -5,27 +5,51 @@ let vm = new Vue({
         currentTab: 'feature',
         tabs: [
             {
-                title: 'Chức Năng',
-                name: 'feature'
+                title: 'Tùy Chọn',
+                name: 'feature',
+                icon: 'fas fa-sliders-h',
+                auth: false
             },
             {
                 title: 'Fly Color',
-                name: 'fly-color'
+                name: 'fly-color',
+                icon: 'fas fa-mouse-pointer',
+                auth: true
+            },
+            {
+                title: 'Auto Cảm Xúc',
+                name: 'auto-reaction',
+                icon: 'fas fa-smile',
+                auth: true
+            },
+            {
+                title: 'Cá Nhân',
+                name: 'profile',
+                icon: 'fas fa-user',
+                auth: true
+            },
+            {
+                title: 'Đăng Xuất',
+                name: 'logout',
+                icon: 'fas fa-sign-out-alt',
+                auth: true
             },
             {
                 title: 'Giới Thiệu',
-                name: 'about'
+                name: 'about',
+                icon: 'fas fa-info-circle',
+                auth: false
             }
         ],
         features:
         {
             blockSeenChat: {
-                text: "Chặn 'Seen' Trong Chat",
+                text: "Chặn Đã Xem Trong Chat",
                 status: false,
                 api: "https://www.facebook.com/ajax/mercury/change_read_status.php",
             },
             blockTypingChat: {
-                text: "Chặn 'Typing' Trong Chat",
+                text: "Chặn Đang Nhập Trong Chat",
                 status: false,
                 api: "https://www.facebook.com/ajax/messaging/typ.php",
             },
@@ -40,12 +64,12 @@ let vm = new Vue({
                 api: "https://www.facebook.com/ajax/notifications/mark_read.php",
             },
             blockSeenStory: {
-                text: "Chặn 'Seen' Story",
+                text: "Chặn Đã Xem Trong Story",
                 status: false,
                 api: "storiesUpdateSeenStateMutation",
             },
             blockTypingComment: {
-                text: "Chặn 'Typing' Trong Bình Luận",
+                text: "Chặn Đang Nhập Trong Bình Luận",
                 status: false,
                 api: "UFI2LiveTypingBroadcastMutation_StartMutation"
             },
@@ -67,7 +91,8 @@ let vm = new Vue({
             showReason: true,
             banForever: false,
             showNotiSetting: false,
-            showDeadBadge: true
+            showDeadBadge: true,
+            showConfigNoti: false
         },
         alert: {
             status: null,
@@ -78,13 +103,20 @@ let vm = new Vue({
             cookie: null,
             fb_dtsg: null,
             id: null,
-            token: null
+            token: null,
+            name: null
+        },
+        autoReaction: {
+            type: [],
+            list: [],
+            status: false,
+            sleep: 5
         }
     },
     computed: {
         actorHasSet()
         {
-            let keys = ['cookie', 'fb_dtsg', 'id', 'token'];
+            let keys = ['cookie', 'fb_dtsg', 'id', 'token', 'name'];
             return keys.filter((key) => {
                 return this.actor[key] != null;
             }).length == keys.length;
@@ -96,6 +128,7 @@ let vm = new Vue({
             this.setFeature();
             this.setFlyColor();
             this.setActor();
+            this.setAutoReaction();
         },
         setFeature()
         {
@@ -149,7 +182,33 @@ let vm = new Vue({
         setFlyColor()
         {
             this.flyColor = JSON.parse(localStorage.getItem('flyColorSetting')) || this.flyColor;
+            this.flyColor.showConfigNoti = false;
         },
+
+        async getPostFromFeed()
+        {
+            try
+            {
+                let { data } = await axios.get(`https://graph.facebook.com/me/home?access_token=${this.actor.token}`);
+                return data.data;
+            }
+            catch(e)
+            {
+                console.log(e);
+            }
+        },
+
+        updateAutoReaction()
+        {
+            localStorage.setItem('autoReaction', JSON.stringify(this.autoReaction));
+            this.showAlert('Cập nhật thành công', 'success');
+        },
+
+        setAutoReaction()
+        {
+            this.autoReaction = JSON.parse(localStorage.getItem('autoReaction')) || this.autoReaction;
+        },
+
         connectToFacebook()
         {
             this.loading = true;
@@ -204,6 +263,12 @@ let vm = new Vue({
         {
             this.actor = JSON.parse(localStorage.getItem('actor')) || this.actor;
         },
+
+        logout()
+        {
+            localStorage.setItem('actor', null);
+            this.actor = {};
+        }
     },
 });
 

@@ -20,7 +20,8 @@ chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
                     cookie,
                     fb_dtsg: request.payload.fb_dtsg,
                     id: request.payload.id,
-                    token: request.payload.token
+                    token: request.payload.token,
+                    name: request.payload.name
                 };
                 localStorage.setItem('actor', JSON.stringify(actor));
                 createContextMenu();
@@ -127,7 +128,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
                         }
                         return;
                     }
-                    return createMessageBox('Không tìm thấy nhóm', 'error');
+                    return createMessageBox('Không tìm thấy nhóm, xin vui lòng thử lại', 'error');
                 }
                 return createMessageBox('Người này nằm trong danh sách bất tử, không thể Fly Color', 'warning');
             }
