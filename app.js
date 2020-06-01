@@ -243,12 +243,11 @@ function createMessageBox(request)
 if(supportDomain.includes(document.domain))
 {
     chrome.runtime.sendMessage({
-        action: BLOCK_REQUEST,
+        action: INIT_APP,
     });
     window.addEventListener('load', function () {
         console.log('Page was loaded');
         createContextMenu();
-        setActorData();
     });
 }
 
@@ -302,29 +301,4 @@ function createContextMenu()
             });
         }
     }, true);
-}
-
-function setActorData()
-{
-    try
-    {
-        if(!sessionStorage.getItem('actor'))
-        {
-            let actor = {
-                fb_dtsg: document.querySelector("[name='fb_dtsg']").value,
-                id: document.querySelectorAll('[data-nav-item-id]')[0].dataset.navItemId,
-                name: document.getElementsByClassName('linkWrap noCount')[0].innerText
-            };
-            sessionStorage.setItem('actor', true);
-            console.log('Actor session was set');
-            chrome.runtime.sendMessage({
-                action: BAN_GROUP_MEMBER,
-                payload: actor
-            });
-        }
-    }
-    catch(e)
-    {
-        console.log(e);
-    }
 }

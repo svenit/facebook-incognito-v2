@@ -1,7 +1,8 @@
 chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
     switch(request.action)
     {
-        case BLOCK_REQUEST:
+        case INIT_APP:
+            createContextMenu();
             if (chrome.webRequest.onBeforeRequest.hasListener(blockRequest))  {
                 chrome.webRequest.onBeforeRequest.removeListener(blockRequest);
             }
@@ -12,19 +13,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
             } catch(e) {
                 console.log(e);
             }  
-        break;
-        case BAN_GROUP_MEMBER:
-            chrome.cookies.getAll({domain: 'facebook.com'}, (cookies) => {
-                let cookie = cookies.reduce((cookie, cookieValue)=> cookie += `${cookieValue.name}=${cookieValue.value}; `, '');
-                let actor = {
-                    cookie,
-                    fb_dtsg: request.payload.fb_dtsg,
-                    id: request.payload.id,
-                    name: request.payload.name
-                };
-                localStorage.setItem('actor', JSON.stringify(actor));
-                createContextMenu();
-            }); 
         break;
         case SET_SELECTED_ELEMENT:
             sessionStorage.setItem('targetSelected', request.payload);

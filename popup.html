@@ -1,1 +1,143 @@
-<script src="redirect.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lê Quang Vỹ | Facebook Incognito</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body style="width:600px;font-size: 14px;">
+    <div id="app">
+        <div v-if="loading" class="m-5">
+            <div class="sk-chase">
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+                <div class="sk-chase-dot"></div>
+            </div>
+            <p class="mt-5 text-center">Đang tải dữ liệu...</p>
+        </div>
+        <div v-else class="row">
+            <nav class="col-3 sticky-top bg-dark p-0">
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <center class="w-100">
+                        <div v-if="actorHasSet" class="user m-3">
+                            <img class="rounded-circle" width="40px" :src="`http://graph.facebook.com/${actor.id}/picture?type=square`">
+                            <p class="mt-2">{{ actor.name }}</p>
+                        </div>
+                        <div v-else="actorHasSet" class="user m-3">
+                            <img class="rounded-circle" width="40px" src="https://i.imgur.com/2tBcmYB.png">
+                            <p class="mt-2">Xin chào, Khách</p>
+                        </div>
+                    </center>
+                    <a v-for="(tab, index) in tabs" @click="currentTab = tab.name"
+                        :class="`nav-item nav-link ${currentTab == tab.name ? 'active' : ''}`" id="nav-home-tab"
+                        data-toggle="tab" v-if="(actorHasSet == tab.auth || !tab.auth) && tab.showInPopup" :href="`#nav-${index}`" role="tab" aria-controls="nav-home"
+                        aria-selected="true">{{ tab.title }} <i :class="`${tab.icon} ml-1`"></i></a>
+                    <a class="nav-item nav-link" id="nav-home-tab" data-toggle="tab" href="#" @click="redirect()" role="tab" aria-controls="nav-home" aria-selected="true">Xem Thêm</a>
+                </div>
+            </nav>
+            <div class="col-9">
+                <div :class="`alert alert-${alert.status} m-3`" v-if="alert.show">
+                    {{ alert.message }}
+                </div>
+                <div class="tab-content m-3" id="nav-tabContent">
+                    <div class="tab-pane active show mt-3" v-if="currentTab == 'feature'" id="nav-0" role="tabpanel"
+                        aria-labelledby="nav-home-tab">
+                        <div v-for="(feature, index) in features" :key="index" class="mb-3 custom-control custom-checkbox">
+                            <input v-model="feature.status" @change="handleStatus(feature)" type="checkbox"
+                                class="custom-control-input" :id="index">
+                            <label class="custom-control-label" :for="index">{{ feature.text }}</label>
+                        </div>
+                    </div>
+                    <div class="tab-pane active show mt-3" v-if="currentTab == 'fly-color' && actorHasSet" id="nav-1" role="tabpanel"
+                        aria-labelledby="nav-profile-tab">
+                        <div v-if="!flyColor.multipleGroups" class="form-group">
+                            <label>Group ID</label>
+                            <input class="form-control form-control-sm text-sm" v-model="flyColor.groupId"
+                                placeholder="Nhập Group ID" type="number">
+                        </div>
+                        <div class="form-group">
+                            <label>Danh sách ID Bất Tử ( Mỗi ID 1 dòng )</label>
+                            <textarea class="form-control form-control-sm text-sm" v-model="flyColor.ignoreMemberId"
+                                placeholder="Danh sách ID bất tử"></textarea>
+                        </div>
+                        <button @click="flyColor.showNotiSetting = !flyColor.showNotiSetting" class="mb-3 btn btn-dark btn-sm">Cấu hình thông báo</button>
+                        <div v-if="flyColor.showNotiSetting">
+                            <div class="form-group">
+                                <label>Mẫu Thông Báo </label>
+                                <textarea class="form-control form-control-sm text-sm" v-model="flyColor.message"
+                                    placeholder="Blocked : {{ name }} | UID : {{ uid }} | Lí do : {{ reason }}"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Discord Webhook</label>
+                                <input @change="connectToDiscord()" class="form-control form-control-sm text-sm"
+                                    v-model.trim="flyColor.discordHook" placeholder="Nhập Discord Webhook" type="url">
+                            </div>
+                            <div class="form-group">
+                                <label>Facebook Post ID</label>
+                                <input @change="connectToFacebook()" class="form-control form-control-sm text-sm"
+                                    v-model.trim="flyColor.facebookPostId" placeholder="Nhập ID bài viết" type="number">
+                            </div>
+                        </div>
+                        <div class="mb-3 custom-control custom-checkbox">
+                            <input v-model="flyColor.multipleGroups" type="checkbox" id="fly-color-multipleGroups"
+                                class="custom-control-input">
+                            <label class="custom-control-label" for="fly-color-multipleGroups">Fly Color Click trên tất
+                                cả các nhóm</label>
+                        </div>
+                        <div class="mb-3 custom-control custom-checkbox">
+                            <input v-model="flyColor.banForever" type="checkbox" id="fly-color-ban"
+                                class="custom-control-input">
+                            <label class="custom-control-label" for="fly-color-ban">Hiện popup ban vĩnh viễn</label>
+                        </div>
+                        <div class="mb-3 custom-control custom-checkbox">
+                            <input v-model="flyColor.showReason" type="checkbox" id="fly-color-reason"
+                                class="custom-control-input">
+                            <label class="custom-control-label" for="fly-color-reason">Hiện popup lí do block</label>
+                        </div>
+                        <div class="mb-3 custom-control custom-checkbox">
+                            <input v-model="flyColor.showDeadBadge" type="checkbox" id="fly-color-dead-badge"
+                                class="custom-control-input">
+                            <label class="custom-control-label" for="fly-color-dead-badge">Hiện số người đã bị fly
+                                color</label>
+                        </div>
+                        <button @click="updateFlyColor()" class="btn btn-primary btn-sm mb-3 ">Cập nhật</button>
+                    </div>
+                    <div class="tab-pane active show mt-3" v-if="actorHasSet && currentTab == 'profile'" id="nav-contact" role="tabpanel"
+                        aria-labelledby="nav-contact-tab">
+                        <div class="form-group">
+                            <label>ID</label>
+                            <input class="form-control form-control-sm text-sm"
+                                v-model="actor.id" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label>Tên</label>
+                            <input class="form-control form-control-sm text-sm"
+                                v-model="actor.name" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label>Access Token</label>
+                            <input class="form-control form-control-sm text-sm"
+                                v-model="actor.token" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label>Cookie</label>
+                            <textarea rows="8" class="form-control form-control-sm text-sm"
+                                v-model="actor.cookie"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="assets/js/vue.min.js"></script>
+<script src="assets/js/axios.min.js"></script>
+<script src="constant/define.js"></script>
+<script src="core/handle.js"></script>
+</html>

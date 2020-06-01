@@ -8,37 +8,41 @@ let vm = new Vue({
                 title: 'Tùy Chọn',
                 name: 'feature',
                 icon: 'fas fa-sliders-h',
-                auth: false
+                auth: false,
+                showInPopup: true,
+                showInOption: true
             },
             {
                 title: 'Fly Color',
                 name: 'fly-color',
                 icon: 'fas fa-mouse-pointer',
-                auth: true
+                auth: true,
+                showInPopup: true,
+                showInOption: false
             },
             {
                 title: 'Auto Cảm Xúc',
                 name: 'auto-reaction',
                 icon: 'fas fa-smile',
-                auth: true
+                auth: true,
+                showInPopup: false,
+                showInOption: true
             },
             {
                 title: 'Cá Nhân',
                 name: 'profile',
                 icon: 'fas fa-user',
-                auth: true
-            },
-            {
-                title: 'Đăng Xuất',
-                name: 'logout',
-                icon: 'fas fa-sign-out-alt',
-                auth: true
+                auth: true,
+                showInPopup: true,
+                showInOption: true
             },
             {
                 title: 'Giới Thiệu',
                 name: 'about',
                 icon: 'fas fa-info-circle',
-                auth: false
+                auth: false,
+                showInPopup: false,
+                showInOption: true
             }
         ],
         features:
@@ -130,8 +134,8 @@ let vm = new Vue({
         {
             this.setFeature();
             this.setFlyColor();
-            this.setActor();
             this.setAutoReaction();
+            this.setActor();
         },
         setFeature()
         {
@@ -146,10 +150,40 @@ let vm = new Vue({
                 });
             }
         },
-        async getAccessToken()
+        async setActor()
+        {
+            this.loading = true;
+            try
+            {
+                if(!sessionStorage.getItem('actorIsSet'))
+                {
+                    var cookie;
+                    chrome.cookies.getAll({domain: 'facebook.com'}, (cookies) => {
+                        cookie = cookies.reduce((cookie, cookieValue)=> cookie += `${cookieValue.name}=${cookieValue.value}; `, '');
+                    }); 
+                    let { token, fb_dtsg, name, id } = await this.getUserDetail();
+                    localStorage.setItem('actor', JSON.stringify({cookie, token, fb_dtsg, name, id}));
+                    sessionStorage.setItem('actorIsSet', true);
+                }
+                this.getUserDetail();
+                this.actor = JSON.parse(localStorage.getItem('actor')) || this.actor;
+            }
+            catch(e)
+            {
+                this.showAlert('Không có dữ liệu, hãy chắc rằng bạn đã đăng nhập trên Facebook', 'danger');
+            }
+            this.loading = false;
+        },
+        async getUserDetail()
         {
             let { data } = await axios.get('https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi');
-            return JSON.stringify(data).split('accessToken')[1].split('\\\\\\":\\\\\\"')[1].split('\\\\\\"')[0];
+            data = JSON.stringify(data);
+            return {
+                token: data.split('accessToken')[1].split('\\\\\\":\\\\\\"')[1].split('\\\\\\"')[0],
+                fb_dtsg: data.split('fb_dtsg')[1].split('\\\\\\" value=\\\\\\"')[1].split('\\\\\\"')[0],
+                name: 1,
+                id: 1
+            };
         },
         handleStatus(data)
         {
@@ -190,6 +224,7 @@ let vm = new Vue({
         setFlyColor()
         {
             this.flyColor = JSON.parse(localStorage.getItem('flyColorSetting')) || this.flyColor;
+            this.flyColor.showNotiSetting = false;
         },
         updateAutoReaction()
         {
@@ -209,7 +244,7 @@ let vm = new Vue({
         connectToFacebook()
         {
             this.loading = true;
-            let actor = JSON.parse(localStorage.getItem('actor'));
+            let actor = this.actor;
             const self = this;
             chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
                 chrome.tabs.sendMessage(tabs[0].id || null, {action: 'CONNECT_TO_FACEBOOK', actor, facebookPostId: self.flyColor.facebookPostId});  
@@ -255,16 +290,14 @@ let vm = new Vue({
                 this.alert.show = false;
             }, time);
         },
-
-        setActor()
-        {
-            this.actor = JSON.parse(localStorage.getItem('actor')) || this.actor;
-        },
-
         logout()
         {
             localStorage.setItem('actor', null);
             this.actor = {};
+        },
+        redirect()
+        {
+            window.open('option.html');
         }
     },
 });

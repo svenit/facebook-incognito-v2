@@ -6,94 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lê Quang Vỹ | Facebook Incognito</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<style>
-    span {
-        font-size: 13px !important;
-    }
-
-    ::placeholder {
-        font-size: 14px;
-    }
-
-    .col-3 {
-        background-color: #2a3042 !important;
-    }
-    .nav-tabs {
-        background-color: #2a3042;
-        border-bottom: 0px;
-    }
-
-    .nav-tabs .nav-link {
-        border-radius: 0px;
-    }
-
-    .nav-tabs a {
-        color: #ccc;
-        width: 100%;
-        padding: 10px 30px;
-    }
-
-    .nav-tabs .nav-item.show .nav-link,
-    .nav-tabs .nav-link.active {
-        color: #fff;
-        border: 1px solid #222736;
-        background-color: #222736;
-    }
-
-    .nav-tabs .nav-link:focus,
-    .nav-tabs .nav-link:hover {
-        background-color: #222736;
-        border: 1px solid #222736;
-    }
-
-    body {
-        background-color: #222736;
-        color: #ccc;
-    }
-
-    .custom-control-input:checked~.custom-control-label::before {
-        border-color: #5974f4;
-        background-color: #5974f4;
-    }
-
-    .form-control {
-        background-color: #2a3042;
-        color: #ccc;
-        border: 1px solid #424768;
-    }
-
-    .form-control:focus {
-        background-color: #2a3042;
-        border: 1px solid #424768;
-        color: #ccc;
-    }
-</style>
-
 <body style="font-size: 14px;">
-    <div class="row" id="app">
-        <nav class="col-3 sticky-top bg-dark p-0">
+    <div class="row" style="width:100%" id="app">
+        <nav class="col-lg-2 col-md-3 col-sm-3 sticky-top bg-dark p-0" style="height: 100vh;background-color: #2a3042 !important;">
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <center v-if="actorHasSet" class="w-100">
-                    <div class="user m-3">
-                        <img class="rounded-circle" :src="`http://graph.facebook.com/${actor.id}/picture?type=square`">
+                <center class="w-100">
+                    <div v-if="actorHasSet" class="user m-3">
+                        <img class="rounded-circle" width="80px" :src="`http://graph.facebook.com/${actor.id}/picture?type=square`">
                         <p class="mt-2">{{ actor.name }}</p>
+                    </div>
+                    <div v-else="actorHasSet" class="user m-3">
+                        <img class="rounded-circle" width="80px" src="https://i.imgur.com/2tBcmYB.png">
+                        <p class="mt-2">Xin chào, Khách</p>
                     </div>
                 </center>
                 <a v-for="(tab, index) in tabs" @click="currentTab = tab.name"
                     :class="`nav-item nav-link ${currentTab == tab.name ? 'active' : ''}`" id="nav-home-tab"
-                    data-toggle="tab" v-if="actorHasSet == tab.auth || !tab.auth" :href="`#nav-${index}`" role="tab" aria-controls="nav-home"
+                    data-toggle="tab" v-if="(actorHasSet == tab.auth || !tab.auth) && tab.showInOption" :href="`#nav-${index}`" role="tab" aria-controls="nav-home"
                     aria-selected="true">{{ tab.title }} <i :class="`${tab.icon} ml-1`"></i></a>
             </div>
         </nav>
-        <div class="col-9">
+        <div class="col-lg-10 col-md-9 col-sm-9">
             <div :class="`alert alert-${alert.status} m-3`" v-if="alert.show">
                 {{ alert.message }}
             </div>
             <div v-if="loading" class="m-3">
-                Đang tải dữ liệu, xin chờ trong giây lát...
+                <div class="sk-chase">
+                    <div class="sk-chase-dot"></div>
+                    <div class="sk-chase-dot"></div>
+                    <div class="sk-chase-dot"></div>
+                    <div class="sk-chase-dot"></div>
+                    <div class="sk-chase-dot"></div>
+                    <div class="sk-chase-dot"></div>
+                </div>
+                <p class="mt-5 text-center">Đang tải dữ liệu...</p>
             </div>
-            <div v-else class="tab-content m-3" id="nav-tabContent">
+            <div v-else class="tab-content m-3"  style="background: #2a3042; padding: 20px; border-radius: 5px;" id="nav-tabContent">
                 <div class="tab-pane active show mt-3" v-if="currentTab == 'feature'" id="nav-0" role="tabpanel"
                     aria-labelledby="nav-home-tab">
                     <div v-for="(feature, index) in features" :key="index" class="mb-3 custom-control custom-checkbox">
@@ -157,7 +107,6 @@
                 </div>
                 <div class="tab-pane active show mt-3" v-if="actorHasSet && currentTab == 'auto-reaction'" id="nav-contact" role="tabpanel"
                     aria-labelledby="nav-contact-tab">
-                    <p class="my-3 text-sm">Chức năng này chỉ thực thi khi bạn đang ở trên Facebook</p>
                     <div class="row">
                         <div class="col-auto">
                             <div class="custom-control custom-checkbox">
@@ -209,16 +158,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-3 custom-control custom-switch">
-                        <input type="checkbox" v-model="autoReaction.status" class="custom-control-input" id="customSwitch1">
-                        <label class="custom-control-label" for="customSwitch1">Auto Cảm Xúc</label>
-                    </div>
                     <div class="mt-3 form-group">
                         <label for="">Thời gian nghỉ</label>
                         <input type="number" v-model="autoReaction.sleep" placeholder="Nhập thời gian nghỉ" class="form-control">
                     </div>
                     <div class="mt-3">
-                        <button @click="updateAutoReaction()" class="btn btn-primary btn-sm">Chạy</button>
+                        <button @click="updateAutoReaction()" class="btn btn-primary btn-sm">Thực Thi</button>
                     </div>
                 </div>
                 <div class="tab-pane active show mt-3" v-if="actorHasSet && currentTab == 'profile'" id="nav-contact" role="tabpanel"
