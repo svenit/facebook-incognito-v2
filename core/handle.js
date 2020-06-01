@@ -92,7 +92,6 @@ let vm = new Vue({
             banForever: false,
             showNotiSetting: false,
             showDeadBadge: true,
-            showConfigNoti: false
         },
         alert: {
             status: null,
@@ -116,11 +115,15 @@ let vm = new Vue({
     computed: {
         actorHasSet()
         {
-            let keys = ['cookie', 'fb_dtsg', 'id', 'token', 'name'];
+            let keys = ['cookie', 'fb_dtsg', 'id', 'name'];
             return keys.filter((key) => {
                 return this.actor[key] != null;
             }).length == keys.length;
         }
+    },
+    mounted()
+    {
+        this.setDefaultValue();
     },
     methods: {
         setDefaultValue()
@@ -142,6 +145,11 @@ let vm = new Vue({
                     this.checkStatus(this.features[item]);
                 });
             }
+        },
+        async getAccessToken()
+        {
+            let { data } = await axios.get('https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi');
+            return JSON.stringify(data).split('accessToken')[1].split('\\\\\\":\\\\\\"')[1].split('\\\\\\"')[0];
         },
         handleStatus(data)
         {
@@ -182,25 +190,14 @@ let vm = new Vue({
         setFlyColor()
         {
             this.flyColor = JSON.parse(localStorage.getItem('flyColorSetting')) || this.flyColor;
-            this.flyColor.showConfigNoti = false;
         },
-
-        async getPostFromFeed()
-        {
-            try
-            {
-                let { data } = await axios.get(`https://graph.facebook.com/me/home?access_token=${this.actor.token}`);
-                return data.data;
-            }
-            catch(e)
-            {
-                console.log(e);
-            }
-        },
-
         updateAutoReaction()
         {
             localStorage.setItem('autoReaction', JSON.stringify(this.autoReaction));
+            if(this.autoReaction.status)
+            {
+                this.runAutoReaction();
+            }
             this.showAlert('Cập nhật thành công', 'success');
         },
 
@@ -271,8 +268,6 @@ let vm = new Vue({
         }
     },
 });
-
-vm.setDefaultValue();
 
 chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
     switch(request.action)

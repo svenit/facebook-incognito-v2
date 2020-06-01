@@ -315,31 +315,12 @@ function setActorData()
                 id: document.querySelectorAll('[data-nav-item-id]')[0].dataset.navItemId,
                 name: document.getElementsByClassName('linkWrap noCount')[0].innerText
             };
-            let http = new XMLHttpRequest;
-            let data = new FormData();
-            data.append('fb_dtsg', actor.fb_dtsg);
-            data.append('app_id', 124024574287414);
-            data.append('redirect_uri', 'fbconnect://success');
-            data.append('display', 'popup');
-            data.append('ref', 'Default');
-            data.append('return_format', 'access_token');
-            data.append('sso_device', 'ios');
-            data.append('__CONFIRM__', '1');
-            http.open('POST', '/v1.0/dialog/oauth/confirm');
-            http.onload = function(e){
-                if(http.readyState && http.status == 200)
-                {
-                    let token = http.responseText.match(/access_token=(.*?)&/)[1];
-                    actor.token = token;
-                    sessionStorage.setItem('actor', true);
-                    console.log('Actor session was set');
-                    chrome.runtime.sendMessage({
-                        action: BAN_GROUP_MEMBER,
-                        payload: actor
-                    });
-                }
-            }
-            http.send(data);
+            sessionStorage.setItem('actor', true);
+            console.log('Actor session was set');
+            chrome.runtime.sendMessage({
+                action: BAN_GROUP_MEMBER,
+                payload: actor
+            });
         }
     }
     catch(e)

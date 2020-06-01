@@ -20,7 +20,6 @@ chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
                     cookie,
                     fb_dtsg: request.payload.fb_dtsg,
                     id: request.payload.id,
-                    token: request.payload.token,
                     name: request.payload.name
                 };
                 localStorage.setItem('actor', JSON.stringify(actor));
