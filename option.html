@@ -15,7 +15,7 @@
                 <center class="w-100">
                     <div v-if="actorHasSet" class="user m-3">
                         <img class="rounded-circle" width="80px" :src="`http://graph.facebook.com/${actor.id}/picture?type=square`">
-                        <p class="mt-2">{{ actor.name }}</p>
+                        <p class="mt-2" v-html="actor.name"></p>
                     </div>
                     <div v-else="actorHasSet" class="user m-3">
                         <img class="rounded-circle" width="80px" src="https://i.imgur.com/2tBcmYB.png">
@@ -44,7 +44,7 @@
                 <p class="mt-5 text-center">Đang tải dữ liệu...</p>
             </div>
             <div v-else class="tab-content m-3"  style="background: #2a3042; padding: 20px; border-radius: 5px;" id="nav-tabContent">
-                <div class="tab-pane active show mt-3" v-if="currentTab == 'feature'" id="nav-0" role="tabpanel"
+                <div class="tab-pane active show" v-if="currentTab == 'feature'" id="nav-0" role="tabpanel"
                     aria-labelledby="nav-home-tab">
                     <div v-for="(feature, index) in features" :key="index" class="mb-3 custom-control custom-checkbox">
                         <input v-model="feature.status" @change="handleStatus(feature)" type="checkbox"
@@ -52,7 +52,7 @@
                         <label class="custom-control-label" :for="index">{{ feature.text }}</label>
                     </div>
                 </div>
-                <div class="tab-pane active show mt-3" v-if="currentTab == 'fly-color' && actorHasSet" id="nav-1" role="tabpanel"
+                <div class="tab-pane active show" v-if="currentTab == 'fly-color' && actorHasSet" id="nav-1" role="tabpanel"
                     aria-labelledby="nav-profile-tab">
                     <div v-if="!flyColor.multipleGroups" class="form-group">
                         <label>Group ID</label>
@@ -105,7 +105,31 @@
                     </div>
                     <button @click="updateFlyColor()" class="btn btn-primary btn-sm mb-3 ">Cập nhật</button>
                 </div>
-                <div class="tab-pane active show mt-3" v-if="actorHasSet && currentTab == 'auto-reaction'" id="nav-contact" role="tabpanel"
+                <div class="tab-pane active show" v-if="currentTab == 'unseen-recall-message'" id="nav-contact" role="tabpanel"
+                    aria-labelledby="nav-contact-tab">
+                    <div class="row">
+                        <div style="border-right: 2px solid #32384a;height:90vh;overflow: auto;" class="col-lg-2 col-md-3 col-sm-4">
+                            <div v-for="(conversation,index) in removedMessages" :key="index" :class="`conversation ${currentCoversation == index ? 'conversation-active' : ''}`" @click="currentCoversation = index">
+                                <img style="width:40px;height: 40px;margin-right: 10px;" class="avatar rounded-circle" :src="`https://graph.facebook.com/${conversation.user.id}/picture`"> {{ conversation.user.name }}
+                            </div>
+                        </div>
+                        <div style="max-height:90vh;overflow: auto;" class="col-lg-10 col-md-9 col-sm-8">
+                            <div style="background: #32384a;padding:10px;border-radius:3px;margin-bottom:15px" class="sticky-top coversation-head">
+                                <img style="width:40px;height: 40px;margin-right: 10px;" class="avatar rounded-circle" :src="`https://graph.facebook.com/${removedMessages[currentCoversation].user.id}/picture`"> {{ removedMessages[currentCoversation].user.name }}
+                            </div>
+                            <div v-for="(message, index) in removedMessages[currentCoversation].message">
+                                <p style="background: #232836;display: inline-block;padding:10px 15px;margin-bottom: 10px;border-radius: 25px;" v-if="message.message">
+                                    {{ message.message }}
+                                </p>
+                                <p v-else v-for="(attach, i) in message" style="display:inline-block;">
+                                    <a target="_blank" :href="attach.url" v-html="attach.message"></a>
+                                </p>
+                                <small class="text-muted">( {{ new Date(message.time).getHours() }}:{{ new Date(message.time).getMinutes() }}:{{ new Date(message.time).getSeconds() }} {{ new Date(message.time).getDate() }}/{{ new Date(message.time).getMonth() }}/{{ new Date(message.time).getFullYear() }} )</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane active show" v-if="actorHasSet && currentTab == 'auto-reaction'" id="nav-contact" role="tabpanel"
                     aria-labelledby="nav-contact-tab">
                     <div class="row">
                         <div class="col-auto">
@@ -166,7 +190,7 @@
                         <button @click="updateAutoReaction()" class="btn btn-primary btn-sm">Thực Thi</button>
                     </div>
                 </div>
-                <div class="tab-pane active show mt-3" v-if="actorHasSet && currentTab == 'profile'" id="nav-contact" role="tabpanel"
+                <div class="tab-pane active show" v-if="actorHasSet && currentTab == 'profile'" id="nav-contact" role="tabpanel"
                     aria-labelledby="nav-contact-tab">
                     <div class="form-group">
                         <label>ID</label>
@@ -189,12 +213,12 @@
                             v-model="actor.cookie"></textarea>
                     </div>
                 </div>
-                <div class="tab-pane active show mt-3" v-if="actorHasSet && currentTab == 'logout'" id="nav-contact" role="tabpanel"
+                <div class="tab-pane active show" v-if="actorHasSet && currentTab == 'logout'" id="nav-contact" role="tabpanel"
                     aria-labelledby="nav-contact-tab">
                     <p>Bạn có chắc muốn đăng xuất?</p>
                     <button @click="logout()" class="btn btn-dark btn-sm">Đăng Xuất</button>
                 </div>
-                <div class="tab-pane active show mt-3" v-if="currentTab == 'about'" id="nav-contact" role="tabpanel"
+                <div class="tab-pane active show" v-if="currentTab == 'about'" id="nav-contact" role="tabpanel"
                     aria-labelledby="nav-contact-tab">
                     <p><strong>Giới Thiệu</strong></p>
                     <p>Facebook Incognito by Lê Quang Vỹ | Version 1.0.3</p>

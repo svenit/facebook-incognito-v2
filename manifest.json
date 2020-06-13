@@ -8,9 +8,13 @@
     "content_scripts": [
         {
           "matches": ["https://*/*"],
-          "js": ["constant/define.js","assets/js/axios.min.js", "app.js"]
+          "run_at": "document_idle",
+          "js": ["constant/define.js","assets/js/axios.min.js", "util.js", "app.js"]
         }
     ],
+    "externally_connectable": {
+        "matches": [ "*://*.facebook.com/*", "*://*.messenger.com/*" ]
+    },
     "icons": { 
         "16": "assets/images/icon.png",
         "48": "assets/images/icon.png",

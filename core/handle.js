@@ -21,6 +21,14 @@ let vm = new Vue({
                 showInOption: false
             },
             {
+                title: 'Tin Nhắn Đã Gỡ',
+                name: 'unseen-recall-message',
+                icon: 'fas fa-mouse-pointer',
+                auth: false,
+                showInPopup: true,
+                showInOption: true
+            },
+            {
                 title: 'Auto Cảm Xúc',
                 name: 'auto-reaction',
                 icon: 'fas fa-smile',
@@ -114,7 +122,9 @@ let vm = new Vue({
             list: [],
             status: false,
             sleep: 5
-        }
+        },
+        removedMessages: [],
+        currentCoversation: 0
     },
     computed: {
         actorHasSet()
@@ -130,12 +140,13 @@ let vm = new Vue({
         this.setDefaultValue();
     },
     methods: {
-        setDefaultValue()
+        async setDefaultValue()
         {
             this.setFeature();
             this.setFlyColor();
             this.setAutoReaction();
-            this.setActor();
+            await this.setActor();
+            this.renderUnseenRecallMessage();
         },
         setFeature()
         {
@@ -165,7 +176,6 @@ let vm = new Vue({
                     localStorage.setItem('actor', JSON.stringify({cookie, token, fb_dtsg, name, id}));
                     sessionStorage.setItem('actorIsSet', true);
                 }
-                this.getUserDetail();
                 this.actor = JSON.parse(localStorage.getItem('actor')) || this.actor;
             }
             catch(e)
@@ -178,12 +188,14 @@ let vm = new Vue({
         {
             let { data } = await axios.get('https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed&hc_location=ufi');
             data = JSON.stringify(data);
-            return {
+            let user = {
                 token: data.split('accessToken')[1].split('\\\\\\":\\\\\\"')[1].split('\\\\\\"')[0],
                 fb_dtsg: data.split('fb_dtsg')[1].split('\\\\\\" value=\\\\\\"')[1].split('\\\\\\"')[0],
-                name: 1,
-                id: 1
-            };
+            }
+            let { data: {name, id} } = await axios.get(`https://graph.facebook.com/me/?access_token=${user.token}`);
+            user.name = name;
+            user.id = id;
+            return user;
         },
         handleStatus(data)
         {
@@ -298,6 +310,66 @@ let vm = new Vue({
         redirect()
         {
             window.open('option.html');
+        },
+        loadUnseenRecallMessage(callback)
+        {
+            const self = this;
+            chrome.storage.local.get('removedMessages', async function (result) {
+                let removedMessages = Object.values(JSON.parse(result.removedMessages));
+                let conversations = [];
+                let user = {};
+                for(let i in removedMessages)
+                {
+                    let threadId = removedMessages[i].thread_id;
+                    if(!conversations.hasOwnProperty(threadId))
+                    {
+                        let { data } = await axios.get(`https://graph.facebook.com/${removedMessages[i].author.match(/\d+/g)[0]}?access_token=${self.actor.token}`);
+                        user = data;
+                    }
+                    conversations[threadId] = !conversations[threadId] ? [] : conversations[threadId];
+                    conversations[threadId].message = !conversations[threadId].message ? [] : conversations[threadId].message;
+                    conversations[threadId].user = user;
+                    let message = [];
+                    if(removedMessages[i].has_attachment)
+                    {
+                        for(let j in removedMessages[i].attachments)
+                        {
+                            let attachment = removedMessages[i].attachments[j];
+                            switch(attachment.attach_type)
+                            {
+                                case 'sticker':
+                                    message.push({
+                                        message: `<img class="coversation-img" src="${attachment.url}"/>`,
+                                        url: attachment.url
+                                    });
+                                break;
+                                case 'animated_image':
+                                case 'photo':
+                                    message.push({
+                                        message: `<img class="coversation-img" src="${attachment.preview_url}">`,
+                                        url: attachment.preview_url
+                                    });
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        message = {
+                            message: removedMessages[i].body
+                        };
+                    }
+                    message.time = removedMessages[i].timestamp;
+                    conversations[threadId].message.push(message);
+                }
+                callback(conversations);
+            });
+        },
+        renderUnseenRecallMessage()
+        {
+            this.loadUnseenRecallMessage((data) => {
+                this.removedMessages = Object.values(data);
+            });
         }
     },
 });

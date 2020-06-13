@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body style="width:600px;font-size: 14px;">
+<body style="width:700px;font-size: 14px;">
     <div id="app">
         <div v-if="loading" class="m-5">
             <div class="sk-chase">
@@ -27,7 +27,7 @@
                     <center class="w-100">
                         <div v-if="actorHasSet" class="user m-3">
                             <img class="rounded-circle" width="40px" :src="`http://graph.facebook.com/${actor.id}/picture?type=square`">
-                            <p class="mt-2">{{ actor.name }}</p>
+                            <p class="mt-2" v-html="actor.name"></p>
                         </div>
                         <div v-else="actorHasSet" class="user m-3">
                             <img class="rounded-circle" width="40px" src="https://i.imgur.com/2tBcmYB.png">
@@ -116,11 +116,6 @@
                                 v-model="actor.id" type="text">
                         </div>
                         <div class="form-group">
-                            <label>Tên</label>
-                            <input class="form-control form-control-sm text-sm"
-                                v-model="actor.name" type="text">
-                        </div>
-                        <div class="form-group">
                             <label>Access Token</label>
                             <input class="form-control form-control-sm text-sm"
                                 v-model="actor.token" type="text">
@@ -129,6 +124,30 @@
                             <label>Cookie</label>
                             <textarea rows="8" class="form-control form-control-sm text-sm"
                                 v-model="actor.cookie"></textarea>
+                        </div>
+                    </div>
+                    <div class="tab-pane active show" v-if="currentTab == 'unseen-recall-message'" id="nav-contact" role="tabpanel"
+                        aria-labelledby="nav-contact-tab">
+                        <div class="row">
+                            <div style="height:90vh;overflow: auto;border-right: 2px solid #32384a;" class="col-auto">
+                                <div v-for="(conversation,index) in removedMessages" :key="index" :class="`conversation ${currentCoversation == index ? 'conversation-active' : ''}`" @click="currentCoversation = index">
+                                    <img style="width:40px;height: 40px;margin-right: 10px;" class="avatar rounded-circle" :src="`https://graph.facebook.com/${conversation.user.id}/picture`">
+                                </div>
+                            </div>
+                            <div style="max-height:90vh;overflow: auto;" class="col-lg-11 col-md-10 col-sm-9">
+                                <div style="background: #32384a;padding:5px;border-radius:3px;margin-bottom:15px" class="sticky-top coversation-head">
+                                    <img style="width:40px;height: 40px;margin-right: 10px;" class="avatar rounded-circle" :src="`https://graph.facebook.com/${removedMessages[currentCoversation].user.id}/picture`"> {{ removedMessages[currentCoversation].user.name }}
+                                </div>
+                                <div v-for="(message, index) in removedMessages[currentCoversation].message">
+                                    <p style="background: #232836;display: inline-block;padding:10px 15px;margin-bottom: 10px;border-radius: 25px;" v-if="message.message">
+                                        {{ message.message }}
+                                    </p>
+                                    <p v-else v-for="(attach, i) in message" style="display:inline-block;">
+                                        <a target="_blank" :href="attach.url" v-html="attach.message"></a>
+                                    </p>
+                                    <small class="text-muted">( {{ new Date(message.time).getHours() }}:{{ new Date(message.time).getMinutes() }}:{{ new Date(message.time).getSeconds() }} {{ new Date(message.time).getDate() }}/{{ new Date(message.time).getMonth() }}/{{ new Date(message.time).getFullYear() }} )</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

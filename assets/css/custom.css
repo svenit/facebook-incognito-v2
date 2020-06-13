@@ -169,3 +169,32 @@ body {
         transform: scale(1.0);
     }
 }
+.coversation-img {
+    width:61px;
+    height:61px;
+    object-fit:cover;
+    margin: 3px;
+    border-radius: 5px;
+}
+
+.coversation-img:hover {
+    cursor: pointer;
+}
+
+.conversation {
+    padding: 10px;
+    border-radius: 50px;
+    transition: all .2s;
+}
+
+.conversation:hover {
+    cursor: pointer;
+}
+
+.conversation-active {
+    background-color: #232836;
+}
+
+.conversation-active img {
+    border: 2px solid #f2f2f2;
+}
