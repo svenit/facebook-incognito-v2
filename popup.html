@@ -108,6 +108,36 @@
                         </div>
                         <button @click="updateFlyColor()" class="btn btn-primary btn-sm mb-3 ">Cập nhật</button>
                     </div>
+                    <div class="tab-pane active show mt-3" v-if="currentTab == 'auto-rep-message'" id="nav-contact" role="tabpanel"
+                        aria-labelledby="nav-contact-tab">
+                        <div class="mb-3 custom-control custom-checkbox">
+                            <input v-model="autoRepMessage.status" type="checkbox" id="auto-rep-status"
+                                class="custom-control-input">
+                            <label class="custom-control-label" for="auto-rep-status">Trạng thái</label>
+                        </div>
+                        <div v-if="autoRepMessage.status">
+                            <div class="mb-3 custom-control custom-checkbox">
+                                <input v-model="autoRepMessage.repInGroup" type="checkbox" id="rep-in-group"
+                                    class="custom-control-input">
+                                <label class="custom-control-label" for="rep-in-group">Trả lời tin nhắn trong nhóm</label>
+                            </div>
+                            <div class="form-group">
+                                <label>Tin nhắn</label>
+                                <textarea class="form-control form-control-sm text-sm"
+                                    v-model="autoRepMessage.message" type="text"></textarea>
+                            </div>
+                            <button @click="autoRepMessage.useSticker = !autoRepMessage.useSticker" class="btn btn-dark btn-sm mb-3">{{ autoRepMessage.useSticker ? 'Đóng Sticker' : 'Sticker' }}</button>
+                            <div v-if="autoRepMessage.useSticker" class="row mb-3 mx-1 list-sticker">
+                                <div v-for="(sticker, index) in autoRepMessage.stickers" :key="index" @click="autoRepMessage.stickerId = autoRepMessage.stickerId == sticker.id ? null : sticker.id" :style="`background-image:url(${sticker.url});width:60px;height:60px;background-size: ${sticker.size}px;background-repeat: no-repeat;background-position: 0px 0px;${sticker.id == autoRepMessage.stickerId ? 'border: 2px solid #ccc': 'border: 2px solid transparent'}`" class="m-2 col-auto"></div>
+                            </div>
+                            <div class="form-group mt-3">
+                                <label>Thời gian delay</label>
+                                <input class="form-control form-control-sm text-sm"
+                                    v-model="autoRepMessage.delay" type="number">
+                            </div>
+                        </div>
+                        <button @click="updateAutoRepMessage()" class="btn btn-primary btn-sm mb-3 ">Cập nhật</button>
+                    </div>
                     <div class="tab-pane active show mt-3" v-if="actorHasSet && currentTab == 'profile'" id="nav-contact" role="tabpanel"
                         aria-labelledby="nav-contact-tab">
                         <div class="form-group">
@@ -126,7 +156,7 @@
                                 v-model="actor.cookie"></textarea>
                         </div>
                     </div>
-                    <div class="tab-pane active show" v-if="currentTab == 'unseen-recall-message'" id="nav-contact" role="tabpanel"
+                    <div class="tab-pane active show" v-if="currentTab == 'unseen-recall-message' && actorHasSet && removedMessages.length > 0" id="nav-contact" role="tabpanel"
                         aria-labelledby="nav-contact-tab">
                         <div class="row">
                             <div style="height:90vh;overflow: auto;border-right: 2px solid #32384a;" class="col-auto">

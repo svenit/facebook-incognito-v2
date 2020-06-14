@@ -1,4 +1,4 @@
-const EXTENSION_ID = "dbhodakoonpcglkjcphdkklibellpfjc";
+export const EXTENSION_ID = "dbhodakoonpcglkjcphdkklibellpfjc";
 
 export function getPersistedMessages(callback) {
     chrome.runtime.sendMessage(EXTENSION_ID, {
@@ -27,15 +27,15 @@ export function setLastPurgeTime() {
 }
 
 export function _getViewerAuthorFbt(removedMessage) {
-    return `You removed a message ${getRemovedMessageText(removedMessage)}`;
+    return `Bạn đã gỡ một tin nhắn ${getRemovedMessageText(removedMessage)}`;
 }
 
 export function _getOtherAuthorFbt(name, removedMessage) {
-    return `${name} removed a message ${getRemovedMessageText(removedMessage)}`;
+    return `${name} đã gỡ một tin nhắn ${getRemovedMessageText(removedMessage)}`;
 }
 
 export function _getUnknownAuthorFbt(removedMessage) {
-    return `A contact removed a message ${getRemovedMessageText(removedMessage)}`;
+    return `Unknown đã gỡ một tin nhắn ${getRemovedMessageText(removedMessage)}`;
 }
 
 function getRemovedMessageText(removedMessage) {

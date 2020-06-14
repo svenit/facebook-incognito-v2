@@ -133,47 +133,64 @@ registerExternalMessageListener();
 
 function registerExternalMessageListener() 
 {
-  chrome.runtime.onMessageExternal.addListener(
-    function (request, sender, sendResponse) {
-      if (request.getPersistedMessages) {
-        getPersistedMessages(messages => {
-          sendResponse(messages);
-        });
-      }
-      if (request.receivedMessages) {
-        setReceivedMessages(request.receivedMessages);
-      }
-      if (request.removedMessages) {
-        setRemovedMessages(request.removedMessages);
-      }
-      if (request.lastPurgeTime) {
-        setLastPurgeTime(request.lastPurgeTime);
-      }
-      return true;
-    }
-  );
+    chrome.runtime.onMessageExternal.addListener(
+        function (request, sender, sendResponse) 
+        {
+            if(request.getPersistedMessages) 
+            {
+                getPersistedMessages(messages => {
+                    sendResponse(messages);
+                });
+            }
+            if(request.receivedMessages) 
+            {
+                setReceivedMessages(request.receivedMessages);
+            }
+            if(request.removedMessages) 
+            {
+                setRemovedMessages(request.removedMessages);
+            }
+            if(request.lastPurgeTime) 
+            {
+                setLastPurgeTime(request.lastPurgeTime);
+            }
+            if(request.action == 'AUTO_REP_MESSAGE')
+            {
+                let actor = JSON.parse(localStorage.getItem('actor'));  
+                let setting = JSON.parse(localStorage.getItem('autoRepMessage'));  
+                chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+                    chrome.tabs.sendMessage(tabs[0].id || null, {action: 'AUTO_REP_MESSAGE', message: request, actor, setting});  
+                });
+            }
+            return true;
+        }
+    );
 }
 
-function getPersistedMessages(callback) {
-  chrome.storage.local.get(['receivedMessages', 'removedMessages', 'lastPurgeTime'], function (result) {
-    callback(result);
-  });
+function getPersistedMessages(callback) 
+{
+    chrome.storage.local.get(['receivedMessages', 'removedMessages', 'lastPurgeTime'], function (result) {
+        callback(result);
+    });
 }
 
-function setReceivedMessages(messages) {
-  chrome.storage.local.set({
-    'receivedMessages': messages
-  });
+function setReceivedMessages(messages) 
+{
+    chrome.storage.local.set({
+        'receivedMessages': messages
+    });
 }
 
-function setRemovedMessages(messages) {
-  chrome.storage.local.set({
-    'removedMessages': messages
-  });
+function setRemovedMessages(messages) 
+{
+    chrome.storage.local.set({
+        'removedMessages': messages
+    });
 }
 
-function setLastPurgeTime(timestamp) {
-  chrome.storage.local.set({
-    'lastPurgeTime': timestamp
-  });
+function setLastPurgeTime(timestamp) 
+{
+    chrome.storage.local.set({
+        'lastPurgeTime': timestamp
+    });
 }

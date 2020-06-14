@@ -6,7 +6,8 @@ import {
     _getUnknownAuthorFbt,
     setReceivedMessages,
     setRemovedMessages,
-    setLastPurgeTime
+    setLastPurgeTime,
+    EXTENSION_ID
 } from './module.js';
 
 const HOOK_MODULES = [
@@ -90,6 +91,10 @@ function informNewMessage(threadId, message)
         threadID: threadId,
         message: message
     });
+    if(message.is_unread)
+    {
+        chrome.runtime.sendMessage(EXTENSION_ID ,{action:'AUTO_REP_MESSAGE',threadId, message});
+    }
 }
 
 function updatedMessage(threadId, messageId, source) 

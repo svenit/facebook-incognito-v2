@@ -239,3 +239,27 @@ function createContextMenu()
         }
     }, true);
 }
+
+async function sendMessage(data)
+{
+    let form = new FormData();
+    let randomId = Math.floor(Math.random()*1000);
+    form.append('fb_dtsg', data.fb_dtsg);
+    form.append('client', 'mercury');
+    form.append('action_type', 'ma-type:user-generated-message');
+    form.append('body', data.message);
+    form.append('ephemeral_ttl_mode', 0);
+    form.append('sticker_id', data.sticker_id);
+    form.append('has_attachment', data.has_attachment);
+    form.append('message_id', parseInt(data.id) + randomId);
+    form.append('offline_threading_id', parseInt(data.id) + randomId);
+    form.append('other_user_fbid', data.other_user_fbid);
+    form.append('signature_id', '52a4388e');
+    form.append('source', 'source:chat:web');
+    form.append('specific_to_list[0]', `fbid:${data.other_user_fbid}`);
+    form.append('specific_to_list[1]', `fbid:${data.my_id}`);
+    form.append('tags[0]', 'web:trigger:fb_header_dock:jewel_thread');
+    form.append('timestamp', new Date().getTime());
+    form.append('ui_push_phase', 'C3');
+    await axios.post(`https://www.facebook.com/messaging/send/`, form);
+}
