@@ -66,34 +66,5 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
                 createMessageBox({status: 'error', message: 'Đã có lỗi xảy ra, xin vui lòng thử lại'});
             }
         break;
-        case 'AUTO_REP_MESSAGE':
-            try
-            {
-                let { actor, message, setting } = request;
-                if(setting.status && (message.message.thread_id.split(':')[0] != 'thread' || setting.repInGroup))
-                {
-                    let { data } = await axios.get(`https://graph.facebook.com/${message.message.other_user_fbid}/?access_token=${actor.token}`);
-                    let messageBody = setting.message;
-                    messageBody = messageBody.replace('{{ name }}', data.name).replace('{{ id }}', data.id);
-                    setTimeout(async () => {
-                        await sendMessage({
-                            fb_dtsg: actor.fb_dtsg,
-                            message: messageBody,
-                            has_attachment: setting.useSticker,
-                            id: message.message.offline_threading_id,
-                            sticker_id: setting.stickerId,
-                            other_user_fbid: message.message.other_user_fbid,
-                            my_id: actor.id,
-                        });
-                        createMessageBox({status: 'success', message: `Hệ thống đã tự động trả lời tin nhắn của ${data.name}`});
-                    }, setting.delay * 1000);
-                }
-                console.log(request);
-            }
-            catch (e)
-            {
-                console.log(e);
-            }
-        break;
     }
 });

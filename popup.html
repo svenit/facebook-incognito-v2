@@ -117,18 +117,37 @@
                         </div>
                         <div v-if="autoRepMessage.status">
                             <div class="mb-3 custom-control custom-checkbox">
+                                <input v-model="autoRepMessage.noRepInFacebook" type="checkbox" id="no-rep-in-fb"
+                                    class="custom-control-input">
+                                <label class="custom-control-label" for="no-rep-in-fb">Không trả lời khi đang trên Facebook</label>
+                            </div>
+                            <div class="mb-3 custom-control custom-checkbox">
                                 <input v-model="autoRepMessage.repInGroup" type="checkbox" id="rep-in-group"
                                     class="custom-control-input">
                                 <label class="custom-control-label" for="rep-in-group">Trả lời tin nhắn trong nhóm</label>
                             </div>
-                            <div class="form-group">
-                                <label>Tin nhắn</label>
-                                <textarea class="form-control form-control-sm text-sm"
-                                    v-model="autoRepMessage.message" type="text"></textarea>
+                            <div class="mb-3 custom-control custom-checkbox">
+                                <input v-model="autoRepMessage.chatbotMode" type="checkbox" id="chat-bot"
+                                    class="custom-control-input">
+                                <label class="custom-control-label" for="chat-bot">Chatbot Mode</label>
                             </div>
-                            <button @click="autoRepMessage.useSticker = !autoRepMessage.useSticker" class="btn btn-dark btn-sm mb-3">{{ autoRepMessage.useSticker ? 'Đóng Sticker' : 'Sticker' }}</button>
-                            <div v-if="autoRepMessage.useSticker" class="row mb-3 mx-1 list-sticker">
-                                <div v-for="(sticker, index) in autoRepMessage.stickers" :key="index" @click="autoRepMessage.stickerId = autoRepMessage.stickerId == sticker.id ? null : sticker.id" :style="`background-image:url(${sticker.url});width:60px;height:60px;background-size: ${sticker.size}px;background-repeat: no-repeat;background-position: 0px 0px;${sticker.id == autoRepMessage.stickerId ? 'border: 2px solid #ccc': 'border: 2px solid transparent'}`" class="m-2 col-auto"></div>
+                            <div v-if="!autoRepMessage.chatbotMode">
+                                <button @click="autoRepMessage.useSticker = !autoRepMessage.useSticker" class="btn btn-dark btn-sm mb-3">{{ autoRepMessage.useSticker ? 'Tin Nhắn' : 'Sticker' }}</button>
+                                <div v-if="!autoRepMessage.useSticker" class="form-group">
+                                    <label>Tin nhắn</label>
+                                    <textarea class="form-control form-control-sm text-sm"
+                                        v-model="autoRepMessage.message" type="text"></textarea>
+                                </div>
+                                <div v-else class="row mb-3 mx-1 list-sticker">
+                                    <div v-for="(sticker, index) in autoRepMessage.stickers" :key="index" @click="autoRepMessage.stickerId = autoRepMessage.stickerId == sticker.id ? null : sticker.id" :style="`background-image:url(${sticker.url});width:60px;height:60px;background-size: ${sticker.size}px;background-repeat: no-repeat;background-position: 0px 0px;${sticker.id == autoRepMessage.stickerId ? 'border: 2px solid #ccc': 'border: 2px solid transparent'}`" class="m-2 col-auto"></div>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <div class="form-group">
+                                    <label>Chữ ký</label>
+                                    <textarea class="form-control form-control-sm text-sm"
+                                        v-model="autoRepMessage.botSign" type="text"></textarea>
+                                </div>
                             </div>
                             <div class="form-group mt-3">
                                 <label>Thời gian delay</label>

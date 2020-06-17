@@ -247,7 +247,10 @@ async function sendMessage(data)
     form.append('fb_dtsg', data.fb_dtsg);
     form.append('client', 'mercury');
     form.append('action_type', 'ma-type:user-generated-message');
-    form.append('body', data.message);
+    if(data.message)
+    {
+        form.append('body', data.message);
+    }
     form.append('ephemeral_ttl_mode', 0);
     form.append('sticker_id', data.sticker_id);
     form.append('has_attachment', data.has_attachment);

@@ -135,11 +135,14 @@ let vm = new Vue({
         currentCoversation: 0,
         autoRepMessage: {
             status: false,
-            message: null,
+            message: 'Chào {{ name }} - ID {{ id }}',
+            botSign: '[ Tin nhắn tự động ]',
             stickerId: null,
             useSticker: false,
             repInGroup: false,
+            noRepInFacebook: true,
             delay: 5,
+            chatbotMode: false,
             stickers: [
                 {
                     id: 422818978354350,
@@ -183,20 +186,16 @@ let vm = new Vue({
             }).length == keys.length;
         }
     },
-    mounted()
+    async mounted()
     {
-        this.setDefaultValue();
+        this.setFeature();
+        this.setFlyColor();
+        this.setAutoReaction();
+        this.setAutoRepMessage();
+        await this.setActor();
+        this.renderUnseenRecallMessage();
     },
     methods: {
-        async setDefaultValue()
-        {
-            this.setFeature();
-            this.setFlyColor();
-            this.setAutoReaction();
-            this.setAutoRepMessage();
-            await this.setActor();
-            this.renderUnseenRecallMessage();
-        },
         setFeature()
         {
             let blocked = localStorage.getItem('blocked');
@@ -289,9 +288,14 @@ let vm = new Vue({
                 this.showAlert('Bạn chưa chọn nhãn dán', 'danger');
                 return;
             }
-            if(!this.autoRepMessage.message.trim() || this.autoRepMessage.message == "")
+            if(!this.autoRepMessage.useSticker && (!this.autoRepMessage.message.trim() || this.autoRepMessage.message == ""))
             {
                 this.showAlert('Bạn chưa nhập tin nhắn', 'danger');
+                return;
+            }
+            if(this.autoRepMessage.delay < 0)
+            {
+                this.showAlert('Thời gian delay không thể nhỏ hơn 0', 'danger');
                 return;
             }
             localStorage.setItem('autoRepMessage', JSON.stringify(this.autoRepMessage));
@@ -455,3 +459,4 @@ chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
         break;
     }
 });
+
