@@ -142,6 +142,11 @@ registerExternalMessageListener();
 function registerExternalMessageListener() 
 {
     chrome.runtime.onMessageExternal.addListener(async (request, sender, sendResponse) => {
+
+        let actor = JSON.parse(localStorage.getItem('actor'));  
+        let setting = JSON.parse(localStorage.getItem('autoRepMessage'));  
+        const defaultCommand = ['count'];
+
         if(request.getPersistedMessages) 
         {
             getPersistedMessages(messages => {
@@ -162,84 +167,104 @@ function registerExternalMessageListener()
         }
         if(request.action == 'AUTO_REP_MESSAGE')
         {
-            let actor = JSON.parse(localStorage.getItem('actor'));  
-            let setting = JSON.parse(localStorage.getItem('autoRepMessage'));  
-            if(setting.status && (request.message.thread_id.split(':')[0] != 'thread' || setting.repInGroup) && (setting.noRepInFacebook != sender.tab.active || !setting.noRepInFacebook))
+            console.log(request);
+            await delay(setting.delay * 1000);
+            if(defaultCommand.includes(request.message.body.toLowerCase()))
+            {
+                await loadCommandMessage();
+            }
+            else if(setting.status && (request.message.thread_id.split(':')[0] != 'thread' || setting.repInGroup) && (setting.noRepInFacebook != sender.tab.active || !setting.noRepInFacebook))
+            {
+                await loadAutobotMessage();
+            }
+        }
+
+        async function loadAutobotMessage()
+        {
+            let messageBody = setting.message;
+            if(request.message.thread_id.split(':')[0] != 'thread')
             {
                 let { data } = await axios.get(`https://graph.facebook.com/${request.message.other_user_fbid}/?access_token=${actor.token}`);
-                let messageBody = setting.message;
                 messageBody = messageBody.replace('{{ name }}', data.name).replace('{{ id }}', data.id);
-                let apiKeys = ['~qkU26zH6T8nX4pJ55WYF-e~9xUVwkNt7dyB5AWY', '7At6Fyt1mnnEMqTpIrx1_2S.z6~TEUOo_ayxDa2C'];
-                if(setting.chatbotMode)
-                {
-                    let { data } = await axios.post('https://wsapi.simsimi.com/190410/talk/', {
-                        lang: 'vi',
-                        utext: request.message.body
-                    }, {
-                        headers: {
-                            'x-api-key': apiKeys[Math.round(Math.random(0, apiKeys.length - 1))]
-                        }
-                    });
-                    let replaceMessages = {
-                        'simsimi': actor.name,
-                        'Simsimi': actor.name,
-                        'SimSimi': actor.name,
-                    };
-                    for(let i of Object.keys(replaceMessages))
-                    {
-                        data.atext = data.atext.replace(i, replaceMessages[i]);
+            }
+            let apiKeys = ['~qkU26zH6T8nX4pJ55WYF-e~9xUVwkNt7dyB5AWY', '7At6Fyt1mnnEMqTpIrx1_2S.z6~TEUOo_ayxDa2C'];
+            if(setting.chatbotMode)
+            {
+                let { data } = await axios.post('https://wsapi.simsimi.com/190410/talk/', {
+                    lang: 'vi',
+                    utext: request.message.body
+                }, {
+                    headers: {
+                        'x-api-key': apiKeys[Math.round(Math.random(0, apiKeys.length - 1))]
                     }
-                    messageBody =  (setting.botSign.replace('{{ name }}', data.name).replace('{{ id }}', data.id) || '') + data.atext.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '');
+                });
+                let replaceMessages = {
+                    'simsimi': actor.name,
+                    'Simsimi': actor.name,
+                    'SimSimi': actor.name,
+                };
+                for(let i of Object.keys(replaceMessages))
+                {
+                    data.atext = data.atext.replace(i, replaceMessages[i]);
                 }
-                setTimeout(async () => {
-                    await sendMessage({
+                messageBody =  setting.botSign + data.atext.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '');
+            }
+            await broadcastMessage({
+                fb_dtsg: actor.fb_dtsg,
+                message: setting.useSticker && !setting.chatbotMode ? null : messageBody,
+                has_attachment: setting.useSticker && !setting.chatbotMode,
+                id: request.message.offline_threading_id,
+                sticker_id: setting.useSticker && !setting.chatbotMode ? setting.stickerId : null,
+                other_user_fbid: request.message.other_user_fbid,
+                my_id: actor.id,
+                thread_fbid: request.message.thread_fbid,
+            }, setting.repInGroup);
+            chrome.notifications.create(`${Math.floor(Math.random() * 99999)}`, {
+                type: 'basic',
+                title: 'Thông Báo',
+                message: `Hệ thống đã tự động trả lời tin nhắn của ${(typeof(data) != 'undefined' ? data.name : '???')}`,
+                iconUrl: chrome.runtime.getURL('assets/images/icon.png')
+            });
+        }
+        async function loadCommandMessage()
+        {
+            switch(request.message.body.toLowerCase())
+            {
+                case 'count':
+                    let form = new FormData();
+                    form.append('fb_dtsg', actor.fb_dtsg);
+                    form.append('q', 'viewer(){message_threads{nodes{thread_key{thread_fbid,other_user_id},all_participants{nodes{messaging_actor{name,gender,profile_picture}}},messages_count,name,image,thread_type}}}');
+                    let { data } = await axios.post('https://www.facebook.com/api/graphql', form);
+                    let participant = data.viewer.message_threads.nodes.filter(item => item.thread_key.other_user_id == request.message.other_user_fbid)[0];
+                    let message = `Thống kê tin nhắn : ${participant.messages_count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} tin nhắn <3`;
+                    if(participant.thread_type == "GROUP")
+                    {
+                        await broadcastMessage({
+                            fb_dtsg: actor.fb_dtsg,
+                            message,
+                            has_attachment: false,
+                            id: request.message.offline_threading_id,
+                            other_user_fbid: request.threadId.match(/\d+/g)[0],
+                            sticker_id: null,
+                            my_id: actor.id,
+                            thread_fbid: request.message.thread_fbid,
+                        }, true);
+                        return;
+                    }
+                    await broadcastMessage({
                         fb_dtsg: actor.fb_dtsg,
-                        message: setting.useSticker && !setting.chatbotMode ? null : messageBody,
-                        has_attachment: setting.useSticker && !setting.chatbotMode,
+                        message,
+                        has_attachment: false,
                         id: request.message.offline_threading_id,
-                        sticker_id: setting.useSticker && !setting.chatbotMode ? setting.stickerId : null,
-                        other_user_fbid: request.message.other_user_fbid,
+                        other_user_fbid: request.threadId.match(/\d+/g)[0],
+                        sticker_id: null,
                         my_id: actor.id,
                     });
-                    chrome.notifications.create(`${Math.floor(Math.random() * 99999)}`, {
-                        type: 'basic',
-                        title: 'Thông Báo',
-                        message: `Hệ thống đã tự động trả lời tin nhắn của ${data.name}`,
-                        iconUrl: chrome.runtime.getURL('assets/images/icon.png')
-                    })
-                }, setting.delay * 1000);
+                break;
             }
-            console.log(request);
         }
         return true;
     });
-}
-
-async function sendMessage(data)
-{
-    let form = new FormData();
-    let randomId = Math.floor(Math.random()*1000);
-    form.append('fb_dtsg', data.fb_dtsg);
-    form.append('client', 'mercury');
-    form.append('action_type', 'ma-type:user-generated-message');
-    if(data.message)
-    {
-        form.append('body', data.message);
-    }
-    form.append('ephemeral_ttl_mode', 0);
-    form.append('sticker_id', data.sticker_id);
-    form.append('has_attachment', data.has_attachment);
-    form.append('message_id', parseInt(data.id) + randomId);
-    form.append('offline_threading_id', parseInt(data.id) + randomId);
-    form.append('other_user_fbid', data.other_user_fbid);
-    form.append('signature_id', '52a4388e');
-    form.append('source', 'source:chat:web');
-    form.append('specific_to_list[0]', `fbid:${data.other_user_fbid}`);
-    form.append('specific_to_list[1]', `fbid:${data.my_id}`);
-    form.append('tags[0]', 'web:trigger:fb_header_dock:jewel_thread');
-    form.append('timestamp', new Date().getTime());
-    form.append('ui_push_phase', 'C3');
-    await axios.post(`https://www.facebook.com/messaging/send/`, form);
 }
 
 function getPersistedMessages(callback) 

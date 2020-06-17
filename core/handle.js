@@ -396,7 +396,7 @@ let vm = new Vue({
                     let user = {};
                     for(let i in removedMessages)
                     {
-                        let threadId = removedMessages[i].thread_id;
+                        let threadId = removedMessages[i].author;
                         if(!conversations.hasOwnProperty(threadId))
                         {
                             let { data } = await axios.get(`https://graph.facebook.com/${removedMessages[i].author.match(/\d+/g)[0]}?access_token=${self.actor.token}`);

@@ -2,7 +2,7 @@
     "name": "Facebook Incognito",
     "description": "Facebook Incognito 2020 Copyright Lê Quang Vỹ ",
     "background": {
-        "scripts": ["constant/define.js", "assets/js/axios.min.js","core/main.js"],
+        "scripts": ["constant/define.js", "assets/js/axios.min.js","util.js","core/main.js"],
         "persistent": true
     },
     "content_scripts": [
