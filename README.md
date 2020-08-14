@@ -3,9 +3,8 @@
 
 [![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://nodesource.com/products/nsolid)
 
-- Facebook Incognito là dự án mã nguồn mở của mình ^^, các bạn có thể cài đặt và sử dụng hoàn toàn miễn phí. Tuy nhiên nghiêm cấm hành vi dùng mà nguồn của mình vào việc thương mại hóa, chuộc lợi cho bản thân
-- Mã nguồn sẽ được cập nhật thường xuyên tại đây ^^
-- Mình sẽ cố đem lại các tính năng hoàn thiện nhất đến với các bạn ^^
+- Facebook Incognito là dự án mã nguồn mở của mình, các bạn có thể cài đặt và sử dụng hoàn toàn miễn phí. Tuy nhiên nghiêm cấm hành vi dùng mà nguồn của mình vào việc thương mại hóa, chuộc lợi cho bản thân
+- Mã nguồn sẽ được cập nhật thường xuyên tại đây
 - **Nghiêm cấm sử dụng mã nguồn này trong việc thương mại hóa, hãy tôn trọng quyền tác giả**
 
 ### Features 
@@ -26,9 +25,7 @@
     + Thông báo đa kênh ( Discord, Facebook )
     + Hiện số người đã kick
 - Tin Nhắn Đã Gỡ
-    + **Bạn đang tò mò muốn biết đối phương vừa chat gì cho bạn mà bạn chưa kịp đọc đã bị thu hồi lại tin nhắn? Đừng lo đã có ngay chức năng này của mình, bạn có thể xem lại tin nhắn mà đối phương đã thu hồi cực kì dễ dàng ^^**
-- Auto Cảm Xúc
-    + Đang update hiu hiu
+    + **Bạn đang tò mò muốn biết đối phương vừa chat gì cho bạn mà bạn chưa kịp đọc đã bị thu hồi lại tin nhắn? Đừng lo đã có ngay chức năng này của mình, bạn có thể xem lại tin nhắn mà đối phương đã thu hồi cực kì dễ dàng**
     
 ### Installation
 
