@@ -48,7 +48,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
                 form.append('fb_dtsg_ag', option.fb_dtsg_ag);
                 form.append('fb_dtsg', option.fb_dtsg);
                 form.append('confirmed', option.confirmed);
-                createMessageBox({status: 'info', message: `Đang thực hiện [ Fly Color ] - ${targetSelected.userName} ra khỏi nhóm ${targetSelected.groupName}`});
+                createMessageBox({status: 'info', message: `Đang thực hiện [ Block ] - ${targetSelected.userName} ra khỏi nhóm ${targetSelected.groupName}`});
                 let { data } = await axios.post(`https://www.facebook.com/ajax/groups/remove_member/?group_id=${groupId}&member_id=${targetSelected.userId}&source=profile_browser&is_undo=0`, form);
                 if(data == '' && await hasBanned(option.fb_dtsg, groupId, targetSelected.userId))
                 {

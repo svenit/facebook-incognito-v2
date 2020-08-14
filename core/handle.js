@@ -13,7 +13,7 @@ let vm = new Vue({
                 showInOption: true
             },
             {
-                title: 'Fly Color',
+                title: 'Dead Click',
                 name: 'fly-color',
                 icon: 'fas fa-mouse-pointer',
                 auth: true,

@@ -29,7 +29,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
         if(!sessionStorage.getItem('isMenuCreated'))
         {
             chrome.contextMenus.create({
-                title: 'Fly Color', 
+                title: 'Block this user', 
                 contexts:['all'], 
                 onclick: banUser
             });
@@ -117,9 +117,9 @@ chrome.runtime.onMessage.addListener(async (request, sender, callback) => {
                     }
                     return createMessageBox('Không tìm thấy nhóm, xin vui lòng thử lại', 'error');
                 }
-                return createMessageBox('Người này nằm trong danh sách bất tử, không thể Fly Color', 'warning');
+                return createMessageBox('Người này nằm trong danh sách bất tử, không thể block', 'warning');
             }
-            createMessageBox('Vui lòng cấu hình Fly Color Click trước khi thực hiện hành động này', 'warning');
+            createMessageBox('Vui lòng cấu hình Dead Click trước khi thực hiện hành động này', 'warning');
         }
         catch(e)
         {
