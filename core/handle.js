@@ -143,37 +143,18 @@ let vm = new Vue({
             noRepInFacebook: true,
             delay: 5,
             chatbotMode: false,
+            simsimiApi: null,
             stickers: [
                 {
                     id: 422818978354350,
-                    url: 'https://scontent.xx.fbcdn.net/v/t39.1997-6/76615293_422818991687682_875370714960494592_n.png?_nc_cat=101&_nc_sid=0572db&_nc_ohc=Rf4G8q2UJcQAX9rZlib&_nc_ad=z-m&_nc_cid=0&_nc_ht=scontent.xx&oh=dd2e09cfebd62b9eca1501ca57fd68a8&oe=5F0D79B4',
+                    url: 'https://i.imgur.com/8rPRf07.png',
                     size: 220
                 },
                 {
                     id: 1330354290487829,
-                    url: 'https://scontent.fhan3-2.fna.fbcdn.net/v/t39.1997-6/p640x640/94063047_1334680636721861_2126797560789073920_n.png?_nc_cat=100&_nc_sid=0572db&_nc_ohc=IVbXmuWLILkAX9sHZ1O&_nc_ht=scontent.fhan3-2.fna&oh=e1670fe5ca2f207dd2c35fc3379ee2f3&oe=5F0D0C17',
+                    url: 'https://i.imgur.com/hxBvnJ2.png',
                     size: 340
-                },
-                {
-                    id: 1330356077154317,
-                    url: 'https://scontent.fhan3-1.fna.fbcdn.net/v/t39.1997-6/94532318_1334683080054950_4261380449881817088_n.png?_nc_cat=1&_nc_sid=ac3552&_nc_ohc=b3GsbSezbfoAX_d_j2A&_nc_ht=scontent.fhan3-1.fna&oh=23e4f5e2b921bd8993c45aa530085968&oe=5F0BF116',
-                    size: 65
-                },
-                {
-                    id: 1748797698766383,
-                    url: 'https://scontent.xx.fbcdn.net/v/t39.1997-6/48606510_2115226582123491_2372732451924475904_n.png?_nc_cat=101&_nc_sid=0572db&_nc_ohc=BU7wHmFZfoIAX82FWoi&_nc_ad=z-m&_nc_cid=0&_nc_ht=scontent.xx&oh=1f4749c324d00ae0cb705edaf62ab94b&oe=5F0A3E71',
-                    size: 290
-                },
-                {
-                    id: 1598323397147148,
-                    url: 'https://scontent.xx.fbcdn.net/v/t39.1997-6/48653385_2115232215456261_5915339537726308352_n.png?_nc_cat=107&_nc_sid=0572db&_nc_ohc=mmWODL-si0UAX97B05M&_nc_ad=z-m&_nc_cid=0&_nc_ht=scontent.xx&oh=fe3ce70208e78e277bf477a0f61e124f&oe=5F0BC5AE',
-                    size: 190
-                },
-                {
-                    id: 1578461809055936,
-                    url: 'https://scontent.xx.fbcdn.net/v/t39.1997-6/68188319_2419912498244192_3201166905280823296_n.png?_nc_cat=103&_nc_sid=0572db&_nc_ohc=gpYPl2f80pYAX9h_Fr6&_nc_ad=z-m&_nc_cid=0&_nc_ht=scontent.xx&oh=5b689a2e2eb97000ee3275cf80782630&oe=5F0C218E',
-                    size: 190
-                },
+                }
             ]
         }
     },
@@ -293,6 +274,11 @@ let vm = new Vue({
                 this.showAlert('Bạn chưa nhập tin nhắn', 'danger');
                 return;
             }
+            if(this.autoRepMessage.chatbotMode && (!this.autoRepMessage.simsimiApi.trim() || this.autoRepMessage.simsimiApi == ""))
+            {
+                this.showAlert('Bạn chưa nhập Api Key', 'danger');
+                return;
+            }
             if(this.autoRepMessage.delay < 0)
             {
                 this.showAlert('Thời gian delay không thể nhỏ hơn 0', 'danger');
@@ -381,10 +367,6 @@ let vm = new Vue({
             localStorage.setItem('actor', null);
             this.actor = {};
         },
-        redirect()
-        {
-            window.open('option.html');
-        },
         loadUnseenRecallMessage(callback)
         {
             const self = this;
@@ -394,6 +376,7 @@ let vm = new Vue({
                     let removedMessages = Object.values(JSON.parse(result.removedMessages));
                     let conversations = [];
                     let user = {};
+                    self.loading = true;
                     for(let i in removedMessages)
                     {
                         let threadId = removedMessages[i].author;
@@ -438,6 +421,7 @@ let vm = new Vue({
                         message.time = removedMessages[i].timestamp;
                         conversations[threadId].message.push(message);
                     }
+                    self.loading = false;
                     callback(conversations);
                 }
             });
@@ -447,6 +431,12 @@ let vm = new Vue({
             this.loadUnseenRecallMessage((data) => {
                 this.removedMessages = Object.values(data).reverse();
             });
+        },
+        deleteAllConversations() {
+            if(confirm('Xóa tất cả tin nhắn?')) {
+                chrome.storage.local.remove('removedMessages');
+                this.removedMessages = [];
+            }
         }
     },
 });

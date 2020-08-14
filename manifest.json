@@ -23,7 +23,6 @@
     "browser_action": {
         "default_popup": "popup.html"
     },
-    "options_page": "option.html",
     "manifest_version": 2,
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
     "permissions": ["activeTab", "notifications","tabs","unlimitedStorage","storage","<all_urls>", "webRequest", "webRequestBlocking", "contextMenus", "cookies"],

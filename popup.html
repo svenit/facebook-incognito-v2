@@ -38,7 +38,6 @@
                         :class="`nav-item nav-link ${currentTab == tab.name ? 'active' : ''}`" id="nav-home-tab"
                         data-toggle="tab" v-if="(actorHasSet == tab.auth || !tab.auth) && tab.showInPopup" :href="`#nav-${index}`" role="tab" aria-controls="nav-home"
                         aria-selected="true">{{ tab.title }} <i :class="`${tab.icon} ml-1`"></i></a>
-                    <a class="nav-item nav-link" id="nav-home-tab" data-toggle="tab" href="#" @click="redirect()" role="tab" aria-controls="nav-home" aria-selected="true">Xem Thêm</a>
                 </div>
             </nav>
             <div class="col-9">
@@ -144,6 +143,11 @@
                             </div>
                             <div v-else>
                                 <div class="form-group">
+                                    <label>Simsimi API Key ( Mỗi key cách nhau 1 dòng )</label>
+                                    <textarea class="form-control form-control-sm text-sm"
+                                        v-model="autoRepMessage.simsimiApi" type="text"></textarea>
+                                </div>
+                                <div class="form-group">
                                     <label>Chữ ký</label>
                                     <textarea class="form-control form-control-sm text-sm"
                                         v-model="autoRepMessage.botSign" type="text"></textarea>
@@ -179,6 +183,7 @@
                         aria-labelledby="nav-contact-tab">
                         <div class="row">
                             <div style="height:90vh;overflow: auto;border-right: 2px solid #32384a;" class="col-auto">
+                                <img @click="deleteAllConversations()" style="width:55px;height: 55px;margin-right: 10px;" class="avatar rounded-circle" src="https://advocateswi.com/templates/sonix/images/delete-sign.png">
                                 <div v-for="(conversation,index) in removedMessages" :key="index" :class="`conversation ${currentCoversation == index ? 'conversation-active' : ''}`" @click="currentCoversation = index">
                                     <img style="width:40px;height: 40px;margin-right: 10px;" class="avatar rounded-circle" :src="`https://graph.facebook.com/${conversation.user.id}/picture`">
                                 </div>

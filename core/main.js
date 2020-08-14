@@ -187,7 +187,7 @@ function registerExternalMessageListener()
                 let { data } = await axios.get(`https://graph.facebook.com/${request.message.other_user_fbid}/?access_token=${actor.token}`);
                 messageBody = messageBody.replace('{{ name }}', data.name).replace('{{ id }}', data.id);
             }
-            let apiKeys = ['~qkU26zH6T8nX4pJ55WYF-e~9xUVwkNt7dyB5AWY', '7At6Fyt1mnnEMqTpIrx1_2S.z6~TEUOo_ayxDa2C'];
+            let apiKeys = setting.simsimiApi.split('\n');
             if(setting.chatbotMode)
             {
                 let { data } = await axios.post('https://wsapi.simsimi.com/190410/talk/', {
@@ -236,7 +236,7 @@ function registerExternalMessageListener()
                     form.append('q', 'viewer(){message_threads{nodes{thread_key{thread_fbid,other_user_id},all_participants{nodes{messaging_actor{name,gender,profile_picture}}},messages_count,name,image,thread_type}}}');
                     let { data } = await axios.post('https://www.facebook.com/api/graphql', form);
                     let participant = data.viewer.message_threads.nodes.filter(item => item.thread_key.other_user_id == request.message.other_user_fbid)[0];
-                    let message = `Thống kê tin nhắn : ${participant.messages_count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} tin nhắn <3`;
+                    let message = `Thống kê tin nhắn : ${participant.messages_count.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} tin nhắn`;
                     if(participant.thread_type == "GROUP")
                     {
                         await broadcastMessage({
