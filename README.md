@@ -38,7 +38,7 @@
 
 ### Installation
 
-Bước 1: Vào cmd hoặc terminal : ``git clone https://github.com/svenit/facebook-incognito.git``
+Bước 1: Vào cmd hoặc terminal : ``git clone https://github.com/svenit/facebook-incognito-v2.git``
 
 Bước 2: Gõ trên thanh địa chỉ ``chrome://extensions/``
 
